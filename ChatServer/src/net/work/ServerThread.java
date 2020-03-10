@@ -65,6 +65,8 @@ public class ServerThread extends Thread {
     }
 
     private void handleLogoff() throws IOException {
+        // remove this thread from thread list
+        server.removeThread(this);
         // send to other online users current users's status
         List<ServerThread> threadList = server.getServerThread();
         String offMsg = "OFFLINE: " + login + "\n";

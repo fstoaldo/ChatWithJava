@@ -39,4 +39,9 @@ public class Server extends Thread {
             e.printStackTrace();
         }
     }
+
+    public void removeThread(ServerThread serverThread) {
+        // remove users that logged off from threadList
+        threadList.remove(serverThread);
+    }
 }
