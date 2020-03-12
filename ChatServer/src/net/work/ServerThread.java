@@ -2,6 +2,8 @@ package net.work;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +14,7 @@ public class ServerThread extends Thread {
     private final Server server;
     private String login = null;
     private OutputStream outputStream;
+    private HashSet<String> topicSet = new HashSet<String>();
 
     public ServerThread(Server server, Socket clientSocket) {
         this.server = server;
@@ -60,6 +63,14 @@ public class ServerThread extends Thread {
                     String[] tokensMsg = StringUtils.split(inputLine,null, 3);
                     handleMessage(tokensMsg);
                 }
+                // handles user joining a topic
+                else if ("join".equalsIgnoreCase(cmd)) {
+                    handleJoin(tokens);
+                }
+                // handles user leaving a topic
+                else if ("leave".equalsIgnoreCase(cmd)) {
+                    handleLeave(tokens);
+                }
                 else {
                     // send message to outputStream
                     String msg = "!UNKNOWN: <" + cmd + ">\n";
@@ -70,16 +81,46 @@ public class ServerThread extends Thread {
         clientSocket.close();
     }
 
-    // format for direct messaging: msg login "text..."
-    private void handleMessage(String[] tokens) throws IOException {
-        String targetUser = tokens[1];
-        String txtBody = tokens[2];
-        List<ServerThread> threadList = server.getServerThread();
+    private void handleLeave(String[] tokens) {
+        if (tokens.length > 1) {
+            String topic = tokens[1];
+            topicSet.remove(topic);
+        }
+    }
 
+    public boolean isMemberOfTopic (String topic) {
+        return topicSet.contains(topic);
+    }
+
+    private void handleJoin(String[] tokens) {
+        if (tokens.length > 1) {
+            String topic = tokens[1];
+            topicSet.add(topic);
+        }
+    }
+
+    // format for direct messaging: msg login "text..."
+    // format for group messaging: #topic "text..."
+    private void handleMessage(String[] tokens) throws IOException {
+        String sendTo = tokens[1];
+        String txtBody = tokens[2];
+
+        // check if sending to topic or user
+        boolean isTopic = sendTo.charAt(0) == '#';
+
+        List<ServerThread> threadList = server.getServerThread();
         for (ServerThread thread : threadList) {
-            if (targetUser.equalsIgnoreCase(thread.getLogin())) {
-                String outMsg = "msg " + login + " " + txtBody + "\n";
-                thread.send(outMsg);
+            if (isTopic) {
+                if (thread.isMemberOfTopic(sendTo)) {
+                    String outMsg = "msg " + sendTo + ": " + login + " " + txtBody + "\n";
+                    thread.send(outMsg);
+                }
+            }
+            else {
+                if (sendTo.equalsIgnoreCase(thread.getLogin())) {
+                    String outMsg = "msg " + login + " " + txtBody + "\n";
+                    thread.send(outMsg);
+                }
             }
         }
     }
