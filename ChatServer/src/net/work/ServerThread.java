@@ -46,6 +46,7 @@ public class ServerThread extends Thread {
             if (tokens != null && tokens.length > 0) {
                 // command will be the first token
                 String cmd = tokens[0];
+                // handle user logoff
                 if ("logoff".equalsIgnoreCase(cmd) || "quit".equalsIgnoreCase(cmd)) {
                     handleLogoff();
                     break;
@@ -53,6 +54,11 @@ public class ServerThread extends Thread {
                 // handle user logins
                 else if ("login".equalsIgnoreCase(cmd)) {
                     handleLogin(outputStream, tokens);
+                }
+                // handle direct messages
+                else if ("msg".equalsIgnoreCase(cmd)) {
+                    String[] tokensMsg = StringUtils.split(inputLine,null, 3);
+                    handleMessage(tokensMsg);
                 }
                 else {
                     // send message to outputStream
@@ -62,6 +68,20 @@ public class ServerThread extends Thread {
             }
         }
         clientSocket.close();
+    }
+
+    // format for direct messaging: msg login "text..."
+    private void handleMessage(String[] tokens) throws IOException {
+        String targetUser = tokens[1];
+        String txtBody = tokens[2];
+        List<ServerThread> threadList = server.getServerThread();
+
+        for (ServerThread thread : threadList) {
+            if (targetUser.equalsIgnoreCase(thread.getLogin())) {
+                String outMsg = "msg " + login + " " + txtBody + "\n";
+                thread.send(outMsg);
+            }
+        }
     }
 
     private void handleLogoff() throws IOException {
