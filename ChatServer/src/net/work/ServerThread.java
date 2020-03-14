@@ -2,7 +2,6 @@ package net.work;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -37,11 +36,12 @@ public class ServerThread extends Thread {
         InputStream inputStream = clientSocket.getInputStream();
         this.outputStream = clientSocket.getOutputStream();
 
-        outputStream.write("Connection established\n".getBytes());
+        // outputStream.write("Connection established\n".getBytes());
 
         // to read line by line
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String inputLine;
+        // FIXME (connection reset, client login)
         while ((inputLine = reader.readLine()) != null) {
             // split line into tokens
             String[] tokens = StringUtils.split(inputLine);
@@ -149,9 +149,9 @@ public class ServerThread extends Thread {
             String login = tokens[1];
             String passwd = tokens[2];
 
-            // allow for guest logins
+            // allow logins
             if ((login.equals("guest") && passwd.equals("guest")) || (login.equals("jim") && passwd.equals("jim"))) {
-                String msg = "Login OK\n";
+                String msg = "login ok";
                 outputStream.write(msg.getBytes());
                 // tie this thread to the login
                 this.login = login;
@@ -175,10 +175,10 @@ public class ServerThread extends Thread {
                         thread.send(onMsg);
                     }
                 }
-                
             } else {
                 String msg = "login ERROR\n";
                 outputStream.write(msg.getBytes());
+                System.err.println("LOGIN FAILED FOR: " + login);
             }
         }
     }
