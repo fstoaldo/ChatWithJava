@@ -81,7 +81,7 @@ public class Client {
         String response = bufferedIn.readLine();
         System.out.println("Response line: " + response);
 
-        if ("login ok".equalsIgnoreCase(response)) {
+        if ("Login OK".equalsIgnoreCase(response)) {
             // start listening to server responses
             startMessageReader();
             return true;

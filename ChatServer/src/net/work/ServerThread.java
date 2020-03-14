@@ -41,7 +41,6 @@ public class ServerThread extends Thread {
         // to read line by line
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String inputLine;
-        // FIXME (connection reset, client login)
         while ((inputLine = reader.readLine()) != null) {
             // split line into tokens
             String[] tokens = StringUtils.split(inputLine);
@@ -137,6 +136,7 @@ public class ServerThread extends Thread {
             }
         }
         clientSocket.close();
+        System.out.println("User logged out: " + login);
     }
 
     public String getLogin() {
@@ -151,7 +151,7 @@ public class ServerThread extends Thread {
 
             // allow logins
             if ((login.equals("guest") && passwd.equals("guest")) || (login.equals("jim") && passwd.equals("jim"))) {
-                String msg = "login ok";
+                String msg = "Login OK\n";
                 outputStream.write(msg.getBytes());
                 // tie this thread to the login
                 this.login = login;

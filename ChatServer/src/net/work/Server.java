@@ -25,7 +25,7 @@ public class Server extends Thread {
             ServerSocket serverSocket = new ServerSocket(serverPort);
             // while loop to accept multiple clients/threads
             while (true) {
-                System.out.print("Accepting client connection...");
+                System.out.print("Accepting client connection...\n");
                 // accept method accepts the connection w/ client and returns a new client socket
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("OK");
